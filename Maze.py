@@ -1,7 +1,10 @@
 import sys, pygame, time, math, heapq
 from enum import Enum
-from threading import Thread
 
+
+RED = 255,0,0
+GREEN = 0,255,0
+BLUE = 0,0,255
 class Estado(Enum):
         BLOQUEADO = 1
         LIVRE = 2
@@ -32,8 +35,8 @@ class Button:
     def getPos(self):
         return self.pos
         
-    def changeColor(self):
-        pygame.draw.rect(screen, self.color, self.rect)
+    def changeColor(self, color = (255,255,255)):
+        pygame.draw.rect(screen, color, self.rect)
         self.state = Estado.BLOQUEADO
         #pygame.display.flip()
     def Checar(self, color):
@@ -77,7 +80,7 @@ class Board:
         #but.append(self.getButtonVect((i - 1, j - 1)))
         ret = []
         for button in but:
-            if(button is not None):
+            if(button is not None and button.state == Estado.LIVRE):
                 ret.append(button)
         
         return ret
@@ -124,7 +127,8 @@ def astar(maze, start, end, allow_diagonal_movement = False):
     while len(openList) > 0:
         #print(openList)
         #print(len(openList))
-        outerIterations += 1
+        
+        #outerIterations += 1
 
         if(outerIterations > maxIteratons):
             print("Muitas iteracoes")
@@ -170,15 +174,20 @@ def astar(maze, start, end, allow_diagonal_movement = False):
         i = currentNode.pos[0]
         j = currentNode.pos[1]
         children = maze.getNeighbours(i, j)
-        for child in children:
-            child.parent = currentNode
+        
         #print("childre = ",  children)
 
         #loop pelas crianças
         for child in children:
+            child.Checar((0,0,255))
+            pygame.display.flip()
+            
+            
+            time.sleep(0.01)
             #child esta na lista dos "fechados"
             if(len( [closedChild for closedChild in closedList if closedChild == child] ) > 0):#n sei o q acontecew aqui
                 continue
+            
 
             #criar f,g e h
             child.g = currentNode.g + 1
@@ -193,6 +202,7 @@ def astar(maze, start, end, allow_diagonal_movement = False):
             #add child to open list
             print("child: ")
             print(child)
+            child.parent = currentNode
             child.Checar((0,255,0))
             heapq.heappush(openList, child)
 
@@ -231,9 +241,9 @@ def getPosByPixel(pos):
     
     return linha,coluna
 
-for x in range(math.floor(height/(fullSize))):
+for x in range(math.floor(width/(fullSize))):
     buttons.append([])
-    for y in range(math.floor(width/(fullSize))):
+    for y in range(math.floor(height/(fullSize))):
         rect = pygame.Rect(x*(block_size+margin) + math.ceil(fullSize/2) ,y*(block_size+margin) + math.ceil(fullSize/2), block_size, block_size)
         buttons[x].append(Button(x,y,rect))
         pygame.draw.rect(screen, color, rect)
@@ -243,7 +253,7 @@ pygame.display.flip()
 ev = pygame.event.get()
 board = Board(buttons)
 #board.run()
-board.printAll()
+#board.printAll()
 
 def pathFinder(comecos = (40,40)):
     comeco = comecos
@@ -279,14 +289,14 @@ while(1):
             if(event.key == pygame.K_SPACE):
                 print("barra de espaco")
                 #pathFinder()       
-                caminho = astar(board, board.getButtonVect((2, 2)), board.getButtonVect((44,44)))
-                for but in caminho:
-                    but.changeColor()
+                caminho = astar(board, board.getButtonVect((2, 2)), board.getButtonVect((47,44)))
+                #for but in caminho:
+                #    but.changeColor()
         if(pygame.mouse.get_pressed()[0] == 1):
             print("Mouse clicked!")  
             a = board.getButtonByPixel(event.pos)
             if(a is not None):
-                a.changeColor()
+                a.changeColor(RED)
            
     
 
